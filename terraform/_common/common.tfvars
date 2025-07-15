@@ -1,4 +1,4 @@
-## 젠킨스 용도2
+## 젠킨스 용도
 ## terraform plan -var-file=../_common_common.tfvars
 ## terraform apply -var-file=../_common_common.tfvars
 
