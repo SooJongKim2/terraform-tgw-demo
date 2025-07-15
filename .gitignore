@@ -1,0 +1,9 @@
+# Terraform 상태 파일 (실제 인프라 정보 포함)
+*.tfstate
+*.tfstate.backup
+
+# Terraform working directory (provider/plugin, 백엔드 관련)
+.terraform/
+
+# Terraform 실행 결과 파일
+*.tfplan

@@ -1,0 +1,40 @@
+Parameters:
+  NamePrefix:
+    Type: String
+
+  ApplyTrustArns:
+    Type: CommaDelimitedList  
+    Description: Comma-delimited list of ARNs (as list)
+
+  PlanTrustArns:
+    Type: CommaDelimitedList  
+    Description: Comma-delimited list of ARNs (as list)
+
+Resources:
+  TerraformApplyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${NamePrefix}-shared-terraform-apply"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref ApplyTrustArns
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  TerraformPlanRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${NamePrefix}-shared-terraform-plan"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref PlanTrustArns
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
