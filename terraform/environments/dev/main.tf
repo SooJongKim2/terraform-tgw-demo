@@ -10,7 +10,7 @@ terraform {
   backend "s3" {
     region         = "ap-northeast-2"
     bucket         = "demo-shared-terraform-state-021891598063"
-    key            = "environments/shared/terraform.tfstate"
+    key            = "environments/dev/terraform.tfstate"
     dynamodb_table = "demo-shared-terraform-lock"
     encrypt        = true
   }

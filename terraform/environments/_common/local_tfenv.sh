@@ -6,7 +6,7 @@ CALLER_ARN=$(aws sts get-caller-identity --query Arn --output text 2>/dev/null)
 CALLER_ID=$(basename "$CALLER_ARN") 
 
 # TF_VAR 설정
-export TF_VAR_role_name="demo-shared-terraform-apply"
+export TF_VAR_role_name="demo-member-terraform-apply"
 export TF_VAR_session_name="tf-${CALLER_ID}"
 
 echo "[tfenv] TF_VAR 설정 완료: session_name=${TF_VAR_session_name}"

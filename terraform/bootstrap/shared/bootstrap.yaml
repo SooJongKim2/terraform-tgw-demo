@@ -1,17 +1,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Bootstrap Terraform resources for EC2-based execution
+Description: Bootstrap Terraform backend and EC2 execution role for centralized EC2-based Terraform
 
 Parameters:
   NamePrefix:
     Type: String
-    Description: Common name prefix 
+    Description: Project name prefix
 
+  EnvName:
+    Type: String
+    Description: Environment name
 Resources:
 
   TerraformStateBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${NamePrefix}-terraform-state-${AWS::AccountId}"
+      BucketName: !Sub "${NamePrefix}-${EnvName}-terraform-state-${AWS::AccountId}"
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -23,7 +26,7 @@ Resources:
   TerraformLockTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${NamePrefix}-terraform-lock"
+      TableName: !Sub "${NamePrefix}-${EnvName}-terraform-lock"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: LockID
@@ -35,7 +38,7 @@ Resources:
   TerraformEc2Role:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${NamePrefix}-terraform-ec2-role"
+      RoleName: !Sub "${NamePrefix}-${EnvName}-terraform-ec2-role"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -44,31 +47,51 @@ Resources:
               Service: ec2.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: TerraformEC2Policy
+        - PolicyName: TerraformEc2Policy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action: sts:AssumeRole
-                Resource: "arn:aws:iam::*:role/soo-shared-terraform-apply"
+                Resource:
+                  - !Sub "arn:aws:iam::*:role/${NamePrefix}-member-terraform-apply"
+
               - Effect: Allow
                 Action:
                   - s3:GetObject
                   - s3:PutObject
                   - s3:ListBucket
                 Resource:
-                  - !Sub "arn:aws:s3:::${NamePrefix}-terraform-state-${AWS::AccountId}"
-                  - !Sub "arn:aws:s3:::${NamePrefix}-terraform-state-${AWS::AccountId}/*"
+                  - !Sub "arn:aws:s3:::${NamePrefix}-${EnvName}-terraform-state-${AWS::AccountId}"
+                  - !Sub "arn:aws:s3:::${NamePrefix}-${EnvName}-terraform-state-${AWS::AccountId}/*"
+
               - Effect: Allow
                 Action:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                   - dynamodb:DeleteItem
-                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${NamePrefix}-terraform-lock"
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${NamePrefix}-${EnvName}-terraform-lock"
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:GetParameterHistory
+                  - ssm:DeleteParameter
+                  - ssm:AddTagsToResource
+                  - ssm:ListTagsForResource
+                  - ssm:DeleteParameters
+                  - ssm:LabelParameterVersion
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/terraform/*"
+              
+              - Effect: Allow
+                Action: ssm:DescribeParameters
+                Resource: "*"
 
   TerraformEc2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub "${NamePrefix}-terraform-ec2-role"
+      InstanceProfileName: !Sub "${NamePrefix}-${EnvName}-terraform-ec2-role"
       Roles:
         - !Ref TerraformEc2Role

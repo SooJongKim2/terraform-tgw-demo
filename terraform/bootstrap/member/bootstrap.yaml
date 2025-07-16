@@ -1,20 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create plan/apply IAM roles in a member account for Terraform. Trust ARNs are configurable.
+
 Parameters:
   NamePrefix:
     Type: String
+    Description: Common name prefix (e.g., demo)
+
+  EnvName:
+    Type: String
+    Description: Environment name (e.g., member, dev, prod)
 
   ApplyTrustArns:
-    Type: CommaDelimitedList  
-    Description: Comma-delimited list of ARNs (as list)
+    Type: CommaDelimitedList
+    Description: Comma-delimited list of ARNs allowed to assume the apply role
 
   PlanTrustArns:
-    Type: CommaDelimitedList  
-    Description: Comma-delimited list of ARNs (as list)
+    Type: CommaDelimitedList
+    Description: Comma-delimited list of ARNs allowed to assume the plan role
 
 Resources:
   TerraformApplyRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${NamePrefix}-shared-terraform-apply"
+      RoleName: !Sub "${NamePrefix}-${EnvName}-terraform-apply"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -28,7 +36,7 @@ Resources:
   TerraformPlanRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${NamePrefix}-shared-terraform-plan"
+      RoleName: !Sub "${NamePrefix}-${EnvName}-terraform-plan"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
