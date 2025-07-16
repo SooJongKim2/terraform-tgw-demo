@@ -125,3 +125,19 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[count.index].id
 }
 
+# Isolated Route Table
+resource "aws_route_table" "isolated" {
+  count  = length(var.isolated_subnet_cidrs)
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name = "${var.name}-isolated-rt-${count.index + 1}"
+  }
+}
+
+# Isolated Route Table Association
+resource "aws_route_table_association" "isolated" {
+  count          = length(var.isolated_subnet_cidrs)
+  subnet_id      = aws_subnet.isolated[count.index].id
+  route_table_id = aws_route_table.isolated[count.index].id
+}

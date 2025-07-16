@@ -23,7 +23,7 @@ output "isolated_subnet_ids" {
   value       = aws_subnet.isolated[*].id
 }
 
-# output "private_route_table_ids" {
-#   description = "List of IDs of private route tables"
-#   value       = aws_route_table.private[*].id
-# }
+output "private_route_table_ids" {
+  description = "List of IDs of private route tables"
+  value       = aws_route_table.private[*].id
+}
