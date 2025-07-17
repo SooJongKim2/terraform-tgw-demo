@@ -168,8 +168,51 @@ resource "aws_route" "to_tgw" {
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
 
+resource "aws_route" "private_to_nat" {
+  count                  = length(module.vpc.private_route_table_ids)
+  route_table_id         = module.vpc.private_route_table_ids[count.index]
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = module.vpc.nat_gateway_ids[count.index]
+
+  depends_on = [module.vpc]
+}
+
+resource "aws_route" "public_to_tgw" {
+  route_table_id         = module.vpc.public_route_table_id
+  destination_cidr_block = var.internal_cidr_block
+  transit_gateway_id     = data.aws_ssm_parameter.tgw_id.value
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
+}
+
 
 ## 1차로 여기까지 (워크로드 생성후에 아래 수행)
+
+# 🔹 Dev Attachment → Dev RTB
+resource "aws_ec2_transit_gateway_route_table_association" "dev" {
+  transit_gateway_attachment_id  = data.aws_ssm_parameter.dev_attachment_id.value
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.dev.id
+
+  depends_on = [aws_ec2_transit_gateway_route_table.dev]
+}
+
+# 🔹 Shared Attachment → Shared RTB
+resource "aws_ec2_transit_gateway_route_table_association" "shared" {
+  transit_gateway_attachment_id  = data.aws_ssm_parameter.shared_attachment_id.value
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared.id
+
+  depends_on = [aws_ec2_transit_gateway_route_table.shared]
+}
+
+# 🔹 Network Attachment → Network RTB
+resource "aws_ec2_transit_gateway_route_table_association" "network" {
+  transit_gateway_attachment_id  = data.aws_ssm_parameter.network_attachment_id.value
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.network.id
+
+  depends_on = [aws_ec2_transit_gateway_route_table.network]
+}
+
+
 # ✅ Static Routes in TGW Route Tables
 
 # 🔹 SSM에서 Attachment ID 및 VPC CIDR 읽기
@@ -232,6 +275,15 @@ resource "aws_ec2_transit_gateway_route" "shared_to_internet" {
   destination_cidr_block         = "0.0.0.0/0"
   transit_gateway_attachment_id  = data.aws_ssm_parameter.network_attachment_id.value
 }
+## Network RT: allow dev + shared
+resource "aws_ec2_transit_gateway_route" "network_to_dev" {
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.network.id
+  destination_cidr_block         = data.aws_ssm_parameter.dev_vpc_cidr.value
+  transit_gateway_attachment_id  = data.aws_ssm_parameter.dev_attachment_id.value
+}
 
-# Network RT intentionally left empty (no routes needed)
-# Attachment will still be associated to tgw-rtb-network
+resource "aws_ec2_transit_gateway_route" "network_to_shared" {
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.network.id
+  destination_cidr_block         = data.aws_ssm_parameter.shared_vpc_cidr.value
+  transit_gateway_attachment_id  = data.aws_ssm_parameter.shared_attachment_id.value
+}

@@ -99,7 +99,7 @@ module "test_ec2" {
   name                 = var.name
   vpc_id              = module.vpc.vpc_id
   subnet_id           = module.vpc.private_subnet_ids[0]
-  ami                 = "ami-0150ccaf51ab55a51"
+  ami                 = "ami-03ff09c4b716e6425"
   instance_type       = "t3.micro"
   ssh_allowed_cidrs   = [module.vpc.vpc_cidr_block]
   associate_public_ip = false

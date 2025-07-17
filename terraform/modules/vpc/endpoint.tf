@@ -32,3 +32,4 @@ resource "aws_ec2_instance_connect_endpoint" "this" {
     Name = "${var.name}-ec2-connect-endpoint"
   }
 }
+

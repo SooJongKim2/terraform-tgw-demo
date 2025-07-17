@@ -91,3 +91,17 @@ resource "aws_route" "to_tgw" {
 
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.this]
 }
+
+
+# ✅ EC2 테스트 인스턴스
+module "test_ec2" {
+  source = "../../modules/ec2"
+
+  name                 = var.name
+  vpc_id              = module.vpc.vpc_id
+  subnet_id           = module.vpc.private_subnet_ids[0]
+  ami                 = "ami-03ff09c4b716e6425"
+  instance_type       = "t3.micro"
+  ssh_allowed_cidrs   = [module.vpc.vpc_cidr_block]
+  associate_public_ip = false
+}
