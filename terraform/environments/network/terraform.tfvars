@@ -1,10 +1,10 @@
-account_id = "010526258116"
+account_id = "024848465231"
 environment = "network"
 name        = "demo"
 aws_region  = "ap-northeast-2"
 member_account_ids = [
-  "008971669849",
-  "021891598063"
+  "084828604478",
+  "011528264969"
 ]
 internal_cidr_block = "10.0.0.0/8"
 

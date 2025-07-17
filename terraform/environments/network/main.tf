@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     region         = "ap-northeast-2"
-    bucket         = "demo-shared-terraform-state-021891598063"
+    bucket         = "demo-shared-terraform-state-084828604478"
     key            = "environments/network/terraform.tfstate"
     dynamodb_table = "demo-shared-terraform-lock"
     encrypt        = true

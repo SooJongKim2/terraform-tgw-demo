@@ -1,16 +1,24 @@
 #!/bin/bash
 set -e
 
-# 🧩 사용자 입력
+# 중앙 계정 ID를 인자로 입력받음
+if [ -z "$1" ]; then
+  echo "[ERROR] Shared Account ID를 인자로 입력해야 합니다."
+  echo "사용 예: ./deploy.sh 123456789012"
+  exit 1
+fi
+
+# 사용자 입력
 NAME_PREFIX="demo"
 REGION="ap-northeast-2"
 
 # 워크로드 계정의 환경 이름
 ENV_NAME="member"
 
-# 중앙 계정의 환경 이름과 ID
+# 중앙 계정의 환경 이름
 SHARED_ENV_NAME="shared"
-SHARED_ACCOUNT_ID="021891598063"
+
+SHARED_ACCOUNT_ID="$1"
 
 # 중앙 계정의 EC2 Role 이름
 TRUST_ROLE_NAME="${NAME_PREFIX}-${SHARED_ENV_NAME}-terraform-ec2-role"
