@@ -1,0 +1,65 @@
+# #!/bin/bash
+# OU_IDS='["ou-nz58-bru65ypz","ou-nz58-goywgvwb"]'
+# STACKSET_NAME="ct-devops-p-tf-iam"
+# APPLY_ROLE_NAME="ct-devops-p-tf-apply-iam_r"
+# PLAN_ROLE_NAME="ct-devops-p-tf-plan-iam_r"
+
+# REGION="ap-northeast-2"
+# TEMPLATE_FILE="bootstrap.yaml"
+
+# APPLY_TRUST_ARNS="\"arn:aws:iam::522114752812:role/aws-reserved/sso.amazonaws.com/ap-northeast-2/AWSReservedSSO_AWSAdministratorAccess_c184f8d61af8bb1a,arn:aws:iam::522114752812:role/devops-p-tf-ec2-iam_r"\"
+# PLAN_TRUST_ARNS="\"arn:aws:iam::522114752812:role/aws-reserved/sso.amazonaws.com/ap-northeast-2/AWSReservedSSO_AWSAdministratorAccess_c184f8d61af8bb1a,arn:aws:iam::522114752812:role/devops-p-tf-ec2-iam_r"\"
+
+# echo "[INFO] APPLY_TRUST_ARNS = ${APPLY_TRUST_ARNS}"
+# echo "[INFO] PLAN_TRUST_ARNS  = ${PLAN_TRUST_ARNS}"
+
+# # StackSet 존재 여부 확인
+# echo "[1/2] StackSet 생성 또는 업데이트 중..."
+# if aws cloudformation describe-stack-set \
+#     --stack-set-name "$STACKSET_NAME" \
+#     --region "$REGION" \
+#     --call-as DELEGATED_ADMIN &>/dev/null; then
+
+#   echo "✅ StackSet이 이미 존재합니다. 업데이트를 진행합니다."
+#   aws cloudformation update-stack-set \
+#     --stack-set-name "$STACKSET_NAME" \
+#     --template-body file://$TEMPLATE_FILE \
+#     --parameters \
+#       ParameterKey=ApplyRoleName,ParameterValue=$APPLY_ROLE_NAME \
+#       ParameterKey=PlanRoleName,ParameterValue=$PLAN_ROLE_NAME \
+#       ParameterKey=ApplyTrustArns,ParameterValue="$APPLY_TRUST_ARNS" \
+#       ParameterKey=PlanTrustArns,ParameterValue="$PLAN_TRUST_ARNS" \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --permission-model SERVICE_MANAGED \
+#     --region "$REGION" \
+#     --call-as DELEGATED_ADMIN \
+#     --tags Key=map-migrated,Value=migPV0803AMRO
+# else
+#   echo "🆕 StackSet이 존재하지 않습니다. 생성합니다."
+#   aws cloudformation create-stack-set \
+#     --stack-set-name "$STACKSET_NAME" \
+#     --template-body file://$TEMPLATE_FILE \
+#     --parameters \
+#       ParameterKey=ApplyRoleName,ParameterValue=$APPLY_ROLE_NAME \
+#       ParameterKey=PlanRoleName,ParameterValue=$PLAN_ROLE_NAME \
+#       ParameterKey=ApplyTrustArns,ParameterValue="$APPLY_TRUST_ARNS" \
+#       ParameterKey=PlanTrustArns,ParameterValue="$PLAN_TRUST_ARNS" \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --auto-deployment Enabled=true,RetainStacksOnAccountRemoval=false \
+#     --permission-model SERVICE_MANAGED \
+#     --region "$REGION" \
+#     --call-as DELEGATED_ADMIN \
+#     --tags Key=map-migrated,Value=migPV0803AMRO
+#   echo "[2/2] Stack Instances 배포 중..."
+#   aws cloudformation create-stack-instances \
+#     --stack-set-name "$STACKSET_NAME" \
+#     --deployment-targets "OrganizationalUnitIds=${OU_IDS}" \
+#     --regions "$REGION" \
+#     --operation-preferences '{"FailureToleranceCount":5,"MaxConcurrentCount":10}' \
+#     --region "$REGION" \
+#     --call-as DELEGATED_ADMIN
+# fi
+
+
+# echo "✅ StackSet 처리 완료"
+

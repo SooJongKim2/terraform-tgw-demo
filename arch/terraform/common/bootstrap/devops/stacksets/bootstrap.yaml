@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create plan/apply IAM roles in a member account for Terraform.
+
+Parameters:
+  ApplyRoleName:
+    Type: String
+    Description: Name of the IAM role for Terraform Apply
+
+  PlanRoleName:
+    Type: String
+    Description: Name of the IAM role for Terraform Plan
+
+  ApplyTrustArns:
+    Type: CommaDelimitedList
+    Description: Comma-delimited list of ARNs allowed to assume the apply role
+
+  PlanTrustArns:
+    Type: CommaDelimitedList
+    Description: Comma-delimited list of ARNs allowed to assume the plan role
+
+Resources:
+  TerraformApplyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ApplyRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref ApplyTrustArns
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  TerraformPlanRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref PlanRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref PlanTrustArns
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: "inline"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: "*"
